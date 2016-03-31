@@ -40,6 +40,7 @@ public class CrosshairBehavior : MonoBehaviour
         }
     }
 
+    //Sets the crosshair to the appropiate depth
     void SetCrosshairPosition()
     {
         //Sets crosshair quad to always face towards camera and fixes the depth

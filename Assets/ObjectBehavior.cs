@@ -3,17 +3,6 @@ using System.Collections;
 
 public class ObjectBehavior : MonoBehaviour {
 
-    // Use this for initialization
-    void Start () {
-	
-	}
-	
-	// Update is called once per frame
-	void Update ()
-    {
-
-    }
-
     //Changes the look of the object if the crosshair goes over the object
     void OnMouseOver()
     {
@@ -32,6 +21,5 @@ public class ObjectBehavior : MonoBehaviour {
     void OnMouseDown()
     {
         transform.localScale += new Vector3(0.5f, 0.5f, 0.5f);
-
     }
 }
