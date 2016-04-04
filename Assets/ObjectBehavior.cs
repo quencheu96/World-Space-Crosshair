@@ -17,8 +17,8 @@ public class ObjectBehavior : MonoBehaviour {
         rend.material.mainTexture = Resources.Load("cow-spot") as Texture;
     }
 
-    //Increases the object's size after clicking on it
-    void OnMouseDown()
+    //Increases the object's size if it is clicked on
+    public void IncreaseSize()
     {
         transform.localScale += new Vector3(0.5f, 0.5f, 0.5f);
     }
