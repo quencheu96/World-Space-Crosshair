@@ -10,6 +10,7 @@ public class CrosshairBehavior : MonoBehaviour
     public int mCameraMode;
     public bool mIsObjectTargetted;
     ObjectBehavior mLastObjectHit;
+    RaycastHit mHit;
 
     //Sets the default mode to FIXED_DEPTH_MODE
     void Start()
@@ -23,6 +24,7 @@ public class CrosshairBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        mHit = LaunchRaycast();
         CheckModeToggle();
         SetCrosshairPosition();
         CrosshairEvents();
@@ -55,12 +57,10 @@ public class CrosshairBehavior : MonoBehaviour
         //Determines distance from object and renders crosshair quad at that distance
         else if (mCameraMode == DYNAMIC_MODE)
         {
-            RaycastHit hit = LaunchRaycast();
-
             //If object is untagged, it defaults to the Fixed depth
-            if (mIsObjectTargetted == true && hit.collider.tag != "Untagged")
+            if (mIsObjectTargetted == true && mHit.collider.tag != "Untagged")
             {
-                SetDynamicDepth(hit);
+                SetDynamicDepth(mHit);
             }
             else
             {
@@ -80,8 +80,13 @@ public class CrosshairBehavior : MonoBehaviour
             mIsObjectTargetted = true;
 
             //Help keeps track of the last object which was hovered over so that it may reset to original state after crosshair leaves it
-            if (hit.collider.tag == "Object")
+            if (IsObject(hit.collider.tag))
             {
+                //Deals with the case in which the crosshair hovers from one object to another so that the first object hit will reset upon hovering over second crosshair
+                if (mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != hit.collider.tag)
+                {
+                    mLastObjectHit.ResetTexture();
+                }
                 mLastObjectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
             }
             return hit;
@@ -93,28 +98,27 @@ public class CrosshairBehavior : MonoBehaviour
     //Determines all the crosshair actions, including clicking on the object and hovering over it.
     void CrosshairEvents()
     {
-        RaycastHit hit = LaunchRaycast();
         ObjectBehavior objectHit;
         
         //If the user is clicking on the object
-        if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && hit.collider.tag == "Object")
+        if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && IsObject(mHit.collider.tag))
         {
-            objectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit = mHit.collider.gameObject.GetComponent<ObjectBehavior>();
             objectHit.IncreaseSize();
         }
 
         //When the crosshair hovers above the object
-        if (mIsObjectTargetted == true && hit.collider.tag == "Object")
+        if (mIsObjectTargetted == true && IsObject(mHit.collider.tag))
         {
-            objectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit = mHit.collider.gameObject.GetComponent<ObjectBehavior>();
             objectHit.ChangeTexture();
         }
 
         //Resets object texture after crosshair leaves it
-        if (mIsObjectTargetted && hit.collider.tag != "Object" && mLastObjectHit != null && mLastObjectHit.tag != hit.collider.tag)
+        if (mIsObjectTargetted  && mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != mHit.collider.tag)
         {
             mLastObjectHit.ResetTexture();
-        }
+        } 
     }
 
     //Sets the crosshair quad's depth dynamically
@@ -135,6 +139,19 @@ public class CrosshairBehavior : MonoBehaviour
         transform.Rotate(0.0f, 180.0f, 0.0f);
         transform.position = CameraFacing.transform.position +
                     CameraFacing.transform.rotation * Vector3.forward * 2;
+    }
+
+    //Determines if the Raycasthit is an object
+    bool IsObject(string tag)
+    {
+        if (tag == "Sphere" || tag == "Cube")
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
 }
