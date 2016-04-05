@@ -7,16 +7,17 @@ public class CrosshairBehavior : MonoBehaviour
     public Camera CameraFacing;
     public int DYNAMIC_MODE;
     public int FIXED_DEPTH_MODE;
-    public int cameraMode;
-    public bool isObjectTargetted;
+    public int mCameraMode;
+    public bool mIsObjectTargetted;
+    ObjectBehavior mLastObjectHit;
 
     //Sets the default mode to FIXED_DEPTH_MODE
     void Start()
     {
         DYNAMIC_MODE = 0;
         FIXED_DEPTH_MODE = 1;
-        cameraMode = FIXED_DEPTH_MODE;
-        isObjectTargetted = false;
+        mCameraMode = FIXED_DEPTH_MODE;
+        mIsObjectTargetted = false;
     }
 
     // Update is called once per frame
@@ -32,13 +33,13 @@ public class CrosshairBehavior : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
-            if (cameraMode == FIXED_DEPTH_MODE)
+            if (mCameraMode == FIXED_DEPTH_MODE)
             {
-                cameraMode = DYNAMIC_MODE;
+                mCameraMode = DYNAMIC_MODE;
             }
             else
             {
-                cameraMode = FIXED_DEPTH_MODE;
+                mCameraMode = FIXED_DEPTH_MODE;
             }
         }
     }
@@ -47,17 +48,17 @@ public class CrosshairBehavior : MonoBehaviour
     void SetCrosshairPosition()
     {
         //Sets crosshair quad to always face towards camera and fixes the depth
-        if (cameraMode == FIXED_DEPTH_MODE)
+        if (mCameraMode == FIXED_DEPTH_MODE)
         {
             SetFixedDepth();
         }
         //Determines distance from object and renders crosshair quad at that distance
-        else if (cameraMode == DYNAMIC_MODE)
+        else if (mCameraMode == DYNAMIC_MODE)
         {
             RaycastHit hit = LaunchRaycast();
 
-            //If object is untagged, it defaults to the F
-            if (isObjectTargetted == true && hit.collider.tag != "Untagged")
+            //If object is untagged, it defaults to the Fixed depth
+            if (mIsObjectTargetted == true && hit.collider.tag != "Untagged")
             {
                 SetDynamicDepth(hit);
             }
@@ -76,21 +77,43 @@ public class CrosshairBehavior : MonoBehaviour
         LandingRay.direction = LandingRay.direction;
         if (Physics.Raycast(LandingRay, out hit))
         {
-            isObjectTargetted = true;
+            mIsObjectTargetted = true;
+
+            //Help keeps track of the last object which was hovered over so that it may reset to original state after crosshair leaves it
+            if (hit.collider.tag == "Object")
+            {
+                mLastObjectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+            }
             return hit;
         }
-        isObjectTargetted = false;
+        mIsObjectTargetted = false;
         return hit;
     }
 
     //Determines all the crosshair actions, including clicking on the object and hovering over it.
     void CrosshairEvents()
     {
-        RaycastHit hit = LaunchRaycast();       
-        if (isObjectTargetted == true && Input.GetMouseButtonDown(0) && hit.collider.tag == "Object")
+        RaycastHit hit = LaunchRaycast();
+        ObjectBehavior objectHit;
+        
+        //If the user is clicking on the object
+        if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && hit.collider.tag == "Object")
         {
-            ObjectBehavior objectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
             objectHit.IncreaseSize();
+        }
+
+        //When the crosshair hovers above the object
+        if (mIsObjectTargetted == true && hit.collider.tag == "Object")
+        {
+            objectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit.ChangeTexture();
+        }
+
+        //Resets object texture after crosshair leaves it
+        if (mIsObjectTargetted && hit.collider.tag != "Object" && mLastObjectHit != null && mLastObjectHit.tag != hit.collider.tag)
+        {
+            mLastObjectHit.ResetTexture();
         }
     }
 
@@ -113,4 +136,5 @@ public class CrosshairBehavior : MonoBehaviour
         transform.position = CameraFacing.transform.position +
                     CameraFacing.transform.rotation * Vector3.forward * 2;
     }
+
 }
