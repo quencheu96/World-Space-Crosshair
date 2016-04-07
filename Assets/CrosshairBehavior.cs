@@ -10,7 +10,7 @@ public class CrosshairBehavior : MonoBehaviour
     public int mCameraMode;
     public bool mIsObjectTargetted;
     ObjectBehavior mLastObjectHit;
-    RaycastHit mHit;
+    RaycastHit mCurrentHit;
 
     //Sets the default mode to FIXED_DEPTH_MODE
     void Start()
@@ -24,7 +24,7 @@ public class CrosshairBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        mHit = LaunchRaycast();
+        mCurrentHit = LaunchRaycast();
         CheckModeToggle();
         SetCrosshairPosition();
         CrosshairEvents();
@@ -58,9 +58,9 @@ public class CrosshairBehavior : MonoBehaviour
         else if (mCameraMode == DYNAMIC_MODE)
         {
             //If object is untagged, it defaults to the Fixed depth
-            if (mIsObjectTargetted == true && mHit.collider.tag != "Untagged")
+            if (mIsObjectTargetted == true && mCurrentHit.collider.tag != "Untagged")
             {
-                SetDynamicDepth(mHit);
+                SetDynamicDepth(mCurrentHit);
             }
             else
             {
@@ -101,21 +101,21 @@ public class CrosshairBehavior : MonoBehaviour
         ObjectBehavior objectHit;
         
         //If the user is clicking on the object
-        if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && IsObject(mHit.collider.tag))
+        if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && IsObject(mCurrentHit.collider.tag))
         {
-            objectHit = mHit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit = mCurrentHit.collider.gameObject.GetComponent<ObjectBehavior>();
             objectHit.IncreaseSize();
         }
 
         //When the crosshair hovers above the object
-        if (mIsObjectTargetted == true && IsObject(mHit.collider.tag))
+        if (mIsObjectTargetted == true && IsObject(mCurrentHit.collider.tag))
         {
-            objectHit = mHit.collider.gameObject.GetComponent<ObjectBehavior>();
+            objectHit = mCurrentHit.collider.gameObject.GetComponent<ObjectBehavior>();
             objectHit.ChangeTexture();
         }
 
         //Resets object texture after crosshair leaves it
-        if (mIsObjectTargetted  && mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != mHit.collider.tag)
+        if (mIsObjectTargetted  && mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != mCurrentHit.collider.tag)
         {
             mLastObjectHit.ResetTexture();
         } 
