@@ -4,20 +4,25 @@ using UnityEngine.UI;
 
 public class CrosshairBehavior : MonoBehaviour
 {
-    public Camera CameraFacing;
-    public int DYNAMIC_MODE;
-    public int FIXED_DEPTH_MODE;
-    public int mCameraMode;
-    public bool mIsObjectTargetted;
-    ObjectBehavior mLastObjectHit;
-    RaycastHit mCurrentHit;
+    [SerializeField]
+    private Camera CameraFacing;
+
+    public enum CameraMode
+    {
+        DYNAMIC_MODE,
+        FIXED_DEPTH_MODE
+    };
+
+    [SerializeField]
+    private CameraMode mCameraMode = CameraMode.FIXED_DEPTH_MODE;
+
+    private bool mIsObjectTargetted;
+    private ObjectBehavior mLastObjectHit;
+    private RaycastHit mCurrentHit;
 
     //Sets the default mode to FIXED_DEPTH_MODE
     void Start()
     {
-        DYNAMIC_MODE = 0;
-        FIXED_DEPTH_MODE = 1;
-        mCameraMode = FIXED_DEPTH_MODE;
         mIsObjectTargetted = false;
     }
 
@@ -35,13 +40,13 @@ public class CrosshairBehavior : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
-            if (mCameraMode == FIXED_DEPTH_MODE)
+            if (mCameraMode == CameraMode.FIXED_DEPTH_MODE)
             {
-                mCameraMode = DYNAMIC_MODE;
+                mCameraMode = CameraMode.DYNAMIC_MODE;
             }
             else
             {
-                mCameraMode = FIXED_DEPTH_MODE;
+                mCameraMode = CameraMode.FIXED_DEPTH_MODE;
             }
         }
     }
@@ -50,12 +55,12 @@ public class CrosshairBehavior : MonoBehaviour
     void SetCrosshairPosition()
     {
         //Sets crosshair quad to always face towards camera and fixes the depth
-        if (mCameraMode == FIXED_DEPTH_MODE)
+        if (mCameraMode == CameraMode.FIXED_DEPTH_MODE)
         {
             SetFixedDepth();
         }
         //Determines distance from object and renders crosshair quad at that distance
-        else if (mCameraMode == DYNAMIC_MODE)
+        else if (mCameraMode == CameraMode.DYNAMIC_MODE)
         {
             //If object is untagged, it defaults to the Fixed depth
             if (mIsObjectTargetted == true && mCurrentHit.collider.tag != "Untagged")
