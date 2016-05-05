@@ -17,7 +17,7 @@ public class CrosshairBehavior : MonoBehaviour
     private CameraMode mCameraMode = CameraMode.FIXED_DEPTH_MODE;
 
     private bool mIsObjectTargetted;
-    private ObjectBehavior mLastObjectHit;
+    private CrosshairListener mLastObjectHit;
     private RaycastHit mCurrentHit;
 
     //Sets the default mode to FIXED_DEPTH_MODE
@@ -90,9 +90,9 @@ public class CrosshairBehavior : MonoBehaviour
                 //Deals with the case in which the crosshair hovers from one object to another so that the first object hit will reset upon hovering over second crosshair
                 if (mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != hit.collider.tag)
                 {
-                    mLastObjectHit.ResetTexture();
+                    mLastObjectHit.OnHoverEnd();
                 }
-                mLastObjectHit = hit.collider.gameObject.GetComponent<ObjectBehavior>();
+                mLastObjectHit = hit.collider.gameObject.GetComponent<CrosshairListener>();
             }
             return hit;
         }
@@ -103,26 +103,26 @@ public class CrosshairBehavior : MonoBehaviour
     //Determines all the crosshair actions, including clicking on the object and hovering over it.
     void CrosshairEvents()
     {
-        ObjectBehavior objectHit;
+        CrosshairListener objectHit;
         
         //If the user is clicking on the object
         if (mIsObjectTargetted == true && Input.GetMouseButtonDown(0) && IsObject(mCurrentHit.collider.tag))
         {
-            objectHit = mCurrentHit.collider.gameObject.GetComponent<ObjectBehavior>();
-            objectHit.IncreaseSize();
+            objectHit = mCurrentHit.collider.gameObject.GetComponent<CrosshairListener>();
+            objectHit.OnClick();
         }
 
         //When the crosshair hovers above the object
         if (mIsObjectTargetted == true && IsObject(mCurrentHit.collider.tag))
         {
-            objectHit = mCurrentHit.collider.gameObject.GetComponent<ObjectBehavior>();
-            objectHit.ChangeTexture();
+            objectHit = mCurrentHit.collider.gameObject.GetComponent<CrosshairListener>();
+            objectHit.OnHoverStart();
         }
 
         //Resets object texture after crosshair leaves it
         if (mIsObjectTargetted  && mLastObjectHit != null && mLastObjectHit.GetComponent<Collider>().tag != mCurrentHit.collider.tag)
         {
-            mLastObjectHit.ResetTexture();
+            mLastObjectHit.OnHoverEnd();
         } 
     }
 

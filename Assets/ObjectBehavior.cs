@@ -3,6 +3,22 @@ using System.Collections;
 
 public class ObjectBehavior : MonoBehaviour {
 
+    void OnEnable()
+    {
+        CrosshairListener objectCrosshairListener = gameObject.GetComponent<CrosshairListener>();
+        objectCrosshairListener.OnClicked += IncreaseSize;
+        objectCrosshairListener.OnHoverStarted += ChangeTexture;
+        objectCrosshairListener.OnHoverEnded += ResetTexture;
+    }
+
+    void OnDisable()
+    {
+        CrosshairListener objectCrosshairListener = gameObject.GetComponent<CrosshairListener>();
+        objectCrosshairListener.OnClicked -= IncreaseSize;
+        objectCrosshairListener.OnHoverStarted -= ChangeTexture;
+        objectCrosshairListener.OnHoverEnded -= ResetTexture;
+    }
+
     //Increases the object's size if it is clicked on
     public void IncreaseSize()
     {
